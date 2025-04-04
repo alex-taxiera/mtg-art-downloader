@@ -160,8 +160,9 @@ class Card:
     @cached_property
     def scry_path(self) -> str:
         # Path to save Scryfall art crop download
+        ext = "png" if cfg.download_scryfall_full else "jpg"
         path = os.path.join(cfg.scry, self.path) if self.path else cfg.scry
-        return self.generate_path(path, self.name, self.artist)
+        return self.generate_path(path, self.name, self.artist, ext)
 
     """
     SETTABLE PROPERTIES
@@ -179,7 +180,7 @@ class Card:
     METHODS
     """
 
-    def generate_path(self, path: str, name: str, artist: str):
+    def generate_path(self, path: str, name: str, artist: str, ext: str = "jpg") -> str:
         """
         Generate a valid path using given card details.
         @param path: Main path to prepend with.
@@ -188,7 +189,7 @@ class Card:
         @return: Valid path to save a file.
         """
         filename = self.naming_convention(name, artist, self.set.upper(), self.number)
-        path = os.path.join(path, f"{filename}.jpg")
+        path = os.path.join(path, f"{filename}.{ext}")
         if not cfg.overwrite:
             path = self.check_path(path)
         return path
@@ -314,8 +315,9 @@ class Adventure(Card):
     @cached_property
     def scry_path(self) -> str:
         # Path to save Scryfall art crop download
+        ext = "png" if cfg.download_scryfall_full else "jpg"
         return self.generate_path(
-            os.path.join(cfg.scry, self.path), self.name_saved, self.artist
+            os.path.join(cfg.scry, self.path), self.name_saved, self.artist, ext
         )
 
     @property
@@ -343,8 +345,9 @@ class Flip(Card):
     @cached_property
     def scry_path(self) -> str:
         # Path to save Scryfall art crop download
+        ext = "png" if cfg.download_scryfall_full else "jpg"
         return self.generate_path(
-            os.path.join(cfg.scry, self.path), self.name_saved, self.artist
+            os.path.join(cfg.scry, self.path), self.name_saved, self.artist, ext
         )
 
     @property
@@ -413,12 +416,13 @@ class MDFC(Card):
     @cached_property
     def scry_paths(self) -> list[str]:
         # Path to save Scryfall art crop download
+        ext = "png" if cfg.download_scryfall_full else "jpg"
         return [
             self.generate_path(
-                os.path.join(cfg.scry, self.path), self.name, self.artist
+                os.path.join(cfg.scry, self.path), self.name, self.artist, ext
             ),
             self.generate_path(
-                os.path.join(cfg.scry, self.path_back), self.name_back, self.artist_back
+                os.path.join(cfg.scry, self.path_back), self.name_back, self.artist_back, ext
             ),
         ]
 
