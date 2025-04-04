@@ -154,7 +154,7 @@ class Card:
     def scry_url(self) -> str:
         # Download link for Scryfall art crop
         return self.c.get("image_uris", {}).get(
-            "large" if cfg.download_scryfall_full else "art_crop", ""
+            "png" if cfg.download_scryfall_full else "art_crop", ""
         )
 
     @cached_property
@@ -383,7 +383,7 @@ class MDFC(Card):
     def scry_urls(self) -> list[Optional[str]]:
         return [
             n.get("image_uris", {}).get(
-                "large" if cfg.download_scryfall_full else "art_crop", ""
+                "png" if cfg.download_scryfall_full else "art_crop", ""
             )
             for n in self.c.get("card_faces", [])
         ]
@@ -477,7 +477,7 @@ class Split(MDFC):
         # List the same image twice
         return [
             self.c.get("image_uris", {}).get(
-                "large" if cfg.download_scryfall_full else "art_crop", ""
+                "png" if cfg.download_scryfall_full else "art_crop", ""
             )
         ] * 2
 

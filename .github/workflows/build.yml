@@ -4,6 +4,8 @@ on:
   push:
     tags:
       - "v*"
+    branches:
+      - "canary/*"
   workflow_dispatch:
 jobs:
   build:
