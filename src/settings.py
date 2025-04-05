@@ -42,6 +42,10 @@ mtgp = os.path.join(
     cwd, folder + "/" + config.get("FILES", "MTGPics.Art.Folder", fallback="mtgpics")
 )
 
+use_category_subfolders = config.getboolean(
+    "FILES", "Use.Category.Subfolders", fallback=False
+)
+
 # Output naming convention
 naming = config.get(
     "FILES", "Naming.Convention", fallback="NAME (ARTIST) [SET] {NUMBER}"
