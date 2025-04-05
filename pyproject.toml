@@ -4,6 +4,7 @@ version = "v1.2.0"
 description = "Mass download MTG card arts using MTG Pics with Scryfall as a backup source."
 authors = ["MrTeferi <freethoughtleft@gmail.com>"]
 license = "GNU General Public License v3.0"
+package-mode = false
 
 [tool.poetry.dependencies]
 python = ">=3.9,<3.12"
