@@ -31,25 +31,39 @@ class Card:
     path = ""
     path_back = ""
 
+    file_path = ""
+    file_path_back = ""
+
     def __init__(self, c: dict) -> None:
         # Store all card info
         self.c = c
         self._promo = False
 
+        self.file_path = self.path
+        self.file_path_back = self.path_back
+
+        if cfg.use_category_subfolders:
+            # Get the card type category
+            self.file_path = os.path.join(self.type_category, self.file_path)
+            if self.file_path_back:
+                self.file_path_back = os.path.join(
+                    self.type_category, self.file_path_back
+                )
+
         # Create download folders if needed
-        Path(os.path.join(cfg.mtgp, self.path)).mkdir(
+        Path(os.path.join(cfg.mtgp, self.file_path)).mkdir(
             mode=511, parents=True, exist_ok=True
         )
-        Path(os.path.join(cfg.scry, self.path)).mkdir(
+        Path(os.path.join(cfg.scry, self.file_path)).mkdir(
             mode=511, parents=True, exist_ok=True
         )
 
         # Setup backs folder if needed
-        if self.path_back:
-            Path(os.path.join(cfg.mtgp, self.path_back)).mkdir(
+        if self.file_path_back:
+            Path(os.path.join(cfg.mtgp, self.file_path_back)).mkdir(
                 mode=511, parents=True, exist_ok=True
             )
-            Path(os.path.join(cfg.scry, self.path_back)).mkdir(
+            Path(os.path.join(cfg.scry, self.file_path_back)).mkdir(
                 mode=511, parents=True, exist_ok=True
             )
 
@@ -84,6 +98,13 @@ class Card:
     @property
     def label(self) -> str:
         return f"{self.name} ({self.set.upper()}) {self.number}"
+
+    @property
+    def type_category(self) -> str:
+        for card_type in con.card_types:
+            if card_type in self.c.get("type_line", ""):
+                return card_type
+        return "Unknown"
 
     @property
     def mtgp_name(self) -> str:
@@ -147,7 +168,7 @@ class Card:
     @cached_property
     def mtgp_path(self) -> str:
         # Path to save MTGP image download
-        path = os.path.join(cfg.mtgp, self.path) if self.path else cfg.mtgp
+        path = os.path.join(cfg.mtgp, self.file_path) if self.file_path else cfg.mtgp
         return self.generate_path(path, self.name, self.artist)
 
     @property
@@ -160,7 +181,7 @@ class Card:
     @cached_property
     def scry_path(self) -> str:
         # Path to save Scryfall art crop download
-        path = os.path.join(cfg.scry, self.path) if self.path else cfg.scry
+        path = os.path.join(cfg.scry, self.file_path) if self.file_path else cfg.scry
         return self.generate_path(path, self.name, self.artist)
 
     """
@@ -308,14 +329,14 @@ class Adventure(Card):
     def mtgp_path(self) -> str:
         # Path to save MTGP image download
         return self.generate_path(
-            os.path.join(cfg.mtgp, self.path), self.name_saved, self.artist
+            os.path.join(cfg.mtgp, self.file_path), self.name_saved, self.artist
         )
 
     @cached_property
     def scry_path(self) -> str:
         # Path to save Scryfall art crop download
         return self.generate_path(
-            os.path.join(cfg.scry, self.path), self.name_saved, self.artist
+            os.path.join(cfg.scry, self.file_path), self.name_saved, self.artist
         )
 
     @property
@@ -337,14 +358,14 @@ class Flip(Card):
     def mtgp_path(self) -> str:
         # Path to save MTGP image download
         return self.generate_path(
-            os.path.join(cfg.mtgp, self.path), self.name_saved, self.artist
+            os.path.join(cfg.mtgp, self.file_path), self.name_saved, self.artist
         )
 
     @cached_property
     def scry_path(self) -> str:
         # Path to save Scryfall art crop download
         return self.generate_path(
-            os.path.join(cfg.scry, self.path), self.name_saved, self.artist
+            os.path.join(cfg.scry, self.file_path), self.name_saved, self.artist
         )
 
     @property
@@ -403,10 +424,12 @@ class MDFC(Card):
         # Path to save MTGP image download
         return [
             self.generate_path(
-                os.path.join(cfg.mtgp, self.path), self.name, self.artist
+                os.path.join(cfg.mtgp, self.file_path), self.name, self.artist
             ),
             self.generate_path(
-                os.path.join(cfg.mtgp, self.path_back), self.name_back, self.artist_back
+                os.path.join(cfg.mtgp, self.file_path_back),
+                self.name_back,
+                self.artist_back,
             ),
         ]
 
@@ -415,10 +438,12 @@ class MDFC(Card):
         # Path to save Scryfall art crop download
         return [
             self.generate_path(
-                os.path.join(cfg.scry, self.path), self.name, self.artist
+                os.path.join(cfg.scry, self.file_path), self.name, self.artist, ext
             ),
             self.generate_path(
-                os.path.join(cfg.scry, self.path_back), self.name_back, self.artist_back
+                os.path.join(cfg.scry, self.file_path_back),
+                self.name_back,
+                self.artist_back,
             ),
         ]
 
@@ -499,16 +524,18 @@ class Reversible(MDFC):
     path = "Reversible Front"
     path_back = "Reversible Back"
 
+    @property
+    def type_category(self) -> str:
+        for card_type in con.card_types:
+            if card_type in self.c.get("card_faces", [])[0].get("type_line", ""):
+                return card_type
+        return "Unknown"
+
+
 
 """
 SIMPLE ARCHETYPES
 """
-
-
-class Land(Card):
-    """Land card type."""
-
-    path = "Land"
 
 
 class BasicLand(Card):
@@ -533,12 +560,6 @@ class Mutate(Card):
     """Mutate frame type introduced in Ikoria."""
 
     path = "Mutate"
-
-
-class Planeswalker(Card):
-    """Saga frame type introduced in Zendikar."""
-
-    path = "Planeswalker"
 
 
 class Class(Card):
@@ -600,14 +621,10 @@ def get_card_class(c: dict):
     # Planeswalker, saga, or land? (non mdfc)
     if not isinstance(c, dict):
         print("C VALUE: ", c)
-    if "Planeswalker" in c.get("type_line", "") and "card_faces" not in c:
-        return Planeswalker
     if "Saga" in c.get("type_line", "") and "card_faces" not in c:
         return Saga
     if "Mutate" in c.get("keywords", ""):
         return Mutate
-    if "Land" in c.get("type_line", "") and "card_faces" not in c:
-        if "Basic Land" in c.get("type_line", ""):
-            return BasicLand
-        return Land
+    if "Basic Land" in c.get("type_line", ""):
+        return BasicLand
     return class_map.get(c.get("layout", "normal"), Card)

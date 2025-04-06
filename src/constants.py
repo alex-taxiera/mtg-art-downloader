@@ -19,6 +19,26 @@ class Constants:
         "slc",
     ]
 
+    card_types = [
+        "Creature",
+        "Land",
+        "Artifact",
+        "Enchantment",
+        "Planeswalker",
+        "Instant",
+        "Sorcery",
+        "Battle",
+        "Conspiracy",
+        "Dungeon",
+        "Emblem",
+        "Hero",
+        "Kindred",
+        "Phenomenon",
+        "Plane",
+        "Scheme",
+        "Vanguard",
+    ]
+
 
 class Console:
     def __init__(self):
