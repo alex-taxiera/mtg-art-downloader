@@ -49,6 +49,11 @@ def normalize_card_list(cards: list[Union[str, dict]]) -> list[Union[str, dict]]
             terms = c.split(" ")
             if len(terms[0]) < 4 and terms[0].isdigit():
                 c = " ".join(terms[1:])
+
+            terms = c.split(" ")
+            if len(terms) > 1 and terms[-1] == "*F*":
+                c = " ".join(terms[:-1])
+
         result.append(c)
     return result
 
