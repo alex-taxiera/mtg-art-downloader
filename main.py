@@ -15,6 +15,7 @@ from src import card as dl
 from src import settings as cfg
 from src.__version__ import version
 from src.constants import console
+from src.core import log_error
 from colorama import Style, Fore
 
 from src.core import (
@@ -127,13 +128,23 @@ class Download:
         """
         # Associate the proper download method
         if isinstance(card, dict):
-            return self.download_dict(card)
+            try:
+                return self.download_dict(card)
+            except Exception as e:
+                # If we have an error, log it
+                log_error(card.label, e)
+                return [(False, str(card))]
         elif isinstance(card, str):
-            return (
-                self.download_detailed(card)
-                if " (" in card
-                else self.download_normal(card)
-            )
+            try:
+                return (
+                    self.download_detailed(card)
+                    if " (" in card
+                    else self.download_normal(card)
+                )
+            except Exception as e:
+                # If we have an error, log it
+                log_error(card, e)
+                return [(False, str(card))]
         console.print(f"Unknown: {str(card)}")
         return [(False, str(card))]
 

@@ -321,3 +321,29 @@ def log_failed(
             f.write(f"{label}\n")
     if print_out:
         console.print(f"{Fore.RED}{action} FAILED:{Style.RESET_ALL} {label}")
+
+
+def log_error(
+    label: str,
+    error: Exception,
+    print_out: bool = True,
+    write_log: bool = True,
+    filename: str = "error",
+) -> None:
+    """
+    Log critical error.
+    @param label: MTG card name and other details.
+    @param print_out: Whether to print the error.
+    @param write_log: Whether to write error to log file.
+    @param filename: Name of the log file.
+    """
+    if write_log:
+        Path(os.path.join(cwd, "logs")).mkdir(mode=511, parents=True, exist_ok=True)
+        with open(
+            os.path.join(cwd, f"logs/{filename}.txt"), "a", encoding="utf-8"
+        ) as f:
+            f.write(f"{label}\n")
+            f.write(f"Error: {error}\n")
+            f.write("\n")
+    if print_out:
+        console.print(f"{Fore.RED}ERROR:{Style.RESET_ALL} {label}")
