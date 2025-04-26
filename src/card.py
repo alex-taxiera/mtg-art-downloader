@@ -208,12 +208,14 @@ class Card:
 
         # Try downloading MTGP
         if not self.download_mtgp(self.mtgp_url, self.mtgp_path, self.label):
-            if (
-                cfg.download_scryfall
-                and self.download_scryfall(self.scry_url, self.scry_path, self.label)
-                and logging
-            ):
-                log_failed(self.label, print_out=False)
+            if cfg.download_scryfall:
+                if (
+                    not self.download_scryfall(
+                        self.scry_url, self.scry_path, self.label
+                    )
+                    and logging
+                ):
+                    log_failed(self.label, print_out=False)
             elif logging:
                 log_failed(self.label)
             return [(False, self.label)]
