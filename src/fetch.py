@@ -8,6 +8,10 @@ import requests
 from backoff import on_exception, expo
 from ratelimit import RateLimitDecorator, sleep_and_retry
 from requests import RequestException
+from src import settings as cfg
+
+session = requests.Session()
+session.headers.update({"User-Agent": cfg.user_agent})
 
 # RateLimiter objects
 scryfall_rate_limit = RateLimitDecorator(calls=10, period=1)
@@ -95,7 +99,7 @@ def get_data_url(url: str, params: Optional[dict[str, str]] = None) -> dict:
     @param params: Params to pass to an API endpoint.
     @return: JSON data returned.
     """
-    with requests.get(url, params=(params or {})) as response:
+    with session.get(url, params=(params or {})) as response:
         if response.status_code == 200:
             return response.json() or {}
         return {}
@@ -109,7 +113,7 @@ def get_scryfall_set(code: str) -> dict:
     @param code: MTG set code, ex: MH2
     @return: Set data as dict.
     """
-    with requests.get(f"https://api.scryfall.com/sets/{code}") as response:
+    with session.get(f"https://api.scryfall.com/sets/{code}") as response:
         if response.status_code == 200:
             data = response.json() or {}
             return data if data.get("object") == "set" else {}
@@ -125,7 +129,7 @@ def get_scryfall_card_named(name: str, code: str) -> dict:
     @param code: Set code of the card.
     @return: Card data as dict.
     """
-    with requests.get(
+    with session.get(
         f"https://api.scryfall.com/cards/named", params={"fuzzy": name, "set": code}
     ) as response:
         if response.status_code == 200:
@@ -143,7 +147,7 @@ def get_scryfall_card_numbered(code: str, number: str) -> dict:
     @param number: Collector number of the card.
     @return: Card data as dict.
     """
-    with requests.get(f"https://api.scryfall.com/cards/{code}/{number}") as response:
+    with session.get(f"https://api.scryfall.com/cards/{code}/{number}") as response:
         if response.status_code == 200:
             data = response.json() or {}
             return data if data.get("object", "error") != "error" else {}
@@ -158,7 +162,7 @@ def get_scryfall_image(url: str, path: str):
     @param path: Path to save the image.
     @return: True if successful, False if failed.
     """
-    with requests.get(url) as response:
+    with session.get(url) as response:
         if response.status_code == 200:
             with open(path, "wb") as f:
                 f.write(response.content)
@@ -179,7 +183,7 @@ def get_mtgp_image(url: str, path: str):
     @param path: Path to save the image.
     @return: True if successful, False if failed.
     """
-    with requests.get(url) as response:
+    with session.get(url) as response:
         if response.status_code == 200:
             with open(path, "wb") as f:
                 f.write(response.content)
@@ -194,7 +198,7 @@ def get_mtgp_page(url: str) -> Optional[bytes]:
     @param url: URL to the page.
     @return: Either the page as bytes or an empty string if failed.
     """
-    with requests.get(url) as response:
+    with session.get(url) as response:
         if response.status_code == 200:
             if "Wrong ref or number." not in response.text:
                 if "No card found." not in response.text:

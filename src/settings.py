@@ -19,6 +19,7 @@ with open(os.path.join(cwd, "src/codes.hjson"), "r", encoding="utf-8") as js:
     replace_sets = hjson.load(js)
 with open(os.path.join(cwd, "src/links.json"), "r", encoding="utf-8") as js:
     links = json.load(js)
+user_agent = "MTGArtDownloader/alex-taxiera-nightly"
 
 """
 FILES AND FOLDERS
