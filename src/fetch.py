@@ -10,7 +10,9 @@ from ratelimit import RateLimitDecorator, sleep_and_retry
 from requests import RequestException
 
 # RateLimiter objects
-scryfall_rate_limit = RateLimitDecorator(calls=20, period=1)
+scryfall_rate_limit = RateLimitDecorator(calls=10, period=1)
+# Rate limiter for search endpoints (stricter limit)
+scryfall_strict_rate_limit = RateLimitDecorator(calls=2, period=1)
 mtgp_rate_limit = RateLimitDecorator(calls=20, period=1)
 
 
@@ -40,16 +42,16 @@ def handle_final_exception(fail_response: Optional[Any]) -> Callable:
     return decorator
 
 
-def handle_scryfall_request(fail_response: Optional[Any] = None) -> Callable:
+def handle_scryfall_request(fail_response: Optional[Any] = None, rate_limit: Optional[RateLimitDecorator] = None) -> Callable:
     """
     Decorator to handle all Scryfall request failure cases, and return appropriate failure value.
     @param fail_response: The value to return if request failed entirely.
     @return: Requested data if successful, fail_response if not.
     """
-
+    limiter = rate_limit if rate_limit is not None else scryfall_rate_limit
     def decorator(func):
         @sleep_and_retry
-        @scryfall_rate_limit
+        @limiter
         @on_exception(expo, RequestException, max_tries=2, max_time=0.75)
         @handle_final_exception(fail_response)
         def wrapper(*args, **kwargs):
@@ -85,7 +87,7 @@ SCRYFALL REQUESTS
 """
 
 
-@handle_scryfall_request({})
+@handle_scryfall_request({}, rate_limit=scryfall_strict_rate_limit)
 def get_data_url(url: str, params: Optional[dict[str, str]] = None) -> dict:
     """
     Get JSON data from any valid API URL.
@@ -114,7 +116,7 @@ def get_scryfall_set(code: str) -> dict:
         return {}
 
 
-@handle_scryfall_request({})
+@handle_scryfall_request({}, rate_limit=scryfall_strict_rate_limit)
 def get_scryfall_card_named(name: str, code: str) -> dict:
     """
     Lookup Card data on Scryfall using /cards/named API.
